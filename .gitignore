@@ -216,3 +216,9 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Datos generados por el pipeline (regenerables con python src/run_pipeline.py)
+data/processed/
+
+# Figuras generadas por el notebook (regenerables al ejecutarlo)
+reports/figuras/
