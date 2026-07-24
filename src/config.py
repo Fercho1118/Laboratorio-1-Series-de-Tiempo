@@ -2,6 +2,8 @@
 
 from pathlib import Path
 
+import pandas as pd
+
 RAIZ = Path(__file__).resolve().parent.parent
 DATA_RAW = RAIZ / "data" / "raw"
 DATA_PROCESSED = RAIZ / "data" / "processed"
@@ -16,6 +18,24 @@ SALIDA_01 = DATA_PROCESSED / "01_ingesta.csv"
 SALIDA_02 = DATA_PROCESSED / "02_deduplicado.csv"
 SALIDA_03 = DATA_PROCESSED / "03_categorias.csv"
 SALIDA_04 = DATA_PROCESSED / "base_limpia.csv"
+
+SALIDA_05 = DATA_PROCESSED / "series_mensuales.csv"
+SALIDA_06_TRAIN = DATA_PROCESSED / "series_train.csv"
+SALIDA_06_TEST = DATA_PROCESSED / "series_test.csv"
+
+# Construccion de series (etapa 5): categorias elegidas segun el diagnostico de
+# viabilidad de la seccion 11 del EDA. Regiones y fronteras son las unicas dos
+# categorias cuyas tres series principales cubren los 210 meses sin huecos.
+CATEGORIAS_SERIES = {"region_dos": "region", "frontera": "frontera"}
+TOP_N_SERIES = 3
+
+# Ventana del cierre de fronteras por la pandemia: unicos meses donde una serie
+# puede valer cero sin ser un hueco de datos.
+INICIO_CIERRE_PANDEMIA = pd.Timestamp("2020-03-01")
+FIN_CIERRE_PANDEMIA = pd.Timestamp("2020-09-01")
+
+# Particion temporal (etapa 6): 70% inicial para entrenamiento, 30% final para prueba
+PROPORCION_ENTRENAMIENTO = 0.70
 
 # Contrato: nombres originales del Excel -> nombres normalizados
 RENOMBRE_COLUMNAS = {

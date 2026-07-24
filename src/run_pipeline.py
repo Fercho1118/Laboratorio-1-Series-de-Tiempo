@@ -10,6 +10,8 @@ ETAPAS = [
     ("02_deduplicacion", "deduplicar", "Etapa 2: deduplicacion"),
     ("03_categorias", "unificar_categorias", "Etapa 3: unificacion de categorias"),
     ("04_tipado", "tipar", "Etapa 4: tipado y validacion de dominios"),
+    ("05_series", "construir_series", "Etapa 5: construccion de series mensuales"),
+    ("06_split", "particionar", "Etapa 6: particion entrenamiento/prueba"),
 ]
 
 

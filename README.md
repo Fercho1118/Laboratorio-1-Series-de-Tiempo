@@ -40,9 +40,19 @@ data/raw/Base_Migracion_2009-2026jun.xlsx
 ┌─────────────────────┐
 │ 04_tipado.py        │  tipa cada columna, arma la fecha y valida dominios
 └─────────────────────┘
+        │  data/processed/base_limpia.csv  ← dataset limpio (ver codebook.md)
+        ▼
+┌─────────────────────┐
+│ 05_series.py        │  construye las 7 series mensuales del laboratorio
+└─────────────────────┘
+        │  data/processed/series_mensuales.csv
+        ▼
+┌─────────────────────┐
+│ 06_split.py         │  particion temporal 70% entrenamiento / 30% prueba
+└─────────────────────┘
         │
         ▼
-data/processed/base_limpia.csv   ← dataset final (ver codebook.md)
+data/processed/series_train.csv y series_test.csv
 ```
 
 | Etapa | Archivo | Responsabilidad | Entrada | Salida |
@@ -51,6 +61,17 @@ data/processed/base_limpia.csv   ← dataset final (ver codebook.md)
 | 2 | `src/02_deduplicacion.py` | Eliminar filas duplicadas exactas y verificar la llave de negocio del formato largo | `01_ingesta.csv` | `data/processed/02_deduplicado.csv` |
 | 3 | `src/03_categorias.py` | Unificar las categorias que el crudo trae escritas de varias formas y separar el codigo de la frontera de su nombre | `02_deduplicado.csv` | `data/processed/03_categorias.csv` |
 | 4 | `src/04_tipado.py` | Convertir cada columna a su tipo y dominio validos, armar la fecha mensual y verificar que los 210 meses esten consecutivos | `03_categorias.csv` | `data/processed/base_limpia.csv` |
+| 5 | `src/05_series.py` | Construir las 7 series mensuales: total de visitantes, top 3 regiones de `region_dos` y top 3 fronteras por acumulado de todo el periodo | `base_limpia.csv` | `data/processed/series_mensuales.csv` |
+| 6 | `src/06_split.py` | Particionar las series en 70% inicial de entrenamiento y 30% final de prueba, con corte temporal (nunca aleatorio) | `series_mensuales.csv` | `data/processed/series_train.csv`, `series_test.csv` |
+
+Sobre la etapa 5: la medida de todas las series es visitantes (Turista +
+Excursionista), la unica agregacion comparable en los 210 meses. Las dos
+categorias elegidas, regiones y fronteras, salen del diagnostico de viabilidad
+de la seccion 11 del EDA: son las unicas dos opciones del enunciado cuyas tres
+series principales cubren todo el periodo sin huecos de datos. Los unicos meses
+en cero admisibles son abril a agosto de 2020 (cierre de fronteras por la
+pandemia), que son ceros reales y no datos faltantes; un cero fuera de esa
+ventana corta el pipeline.
 
 Sobre la etapa 2: en este conjunto no elimina nada, el crudo llega sin filas
 duplicadas exactas. Se mantiene como etapa propia porque el supuesto hay que
@@ -70,6 +91,9 @@ Archivos de apoyo:
 Analisis:
 
 - `notebooks/eda-general.ipynb` — analisis exploratorio general (punto 1 del enunciado).
+- `notebooks/analisis-series.ipynb` — analisis preliminar de las series de tiempo
+  (puntos 2 a 4 del enunciado): inicio, fin y frecuencia, grafico, descomposicion,
+  estacionariedad en media y varianza, transformacion, ADF y ACF/PACF.
 - `reports/figuras/` — figuras que exporta el notebook al ejecutarlo, para usarlas en el informe. No se versionan, ya van embebidas en el notebook.
 - `docs/` — enunciado del laboratorio.
 
@@ -149,8 +173,8 @@ viajeros distintos, asi que se conservan y se suman.
   mensaje claro.
 - **Reejecucion parcial.** Si cambia solo la logica de tipado, se corre la etapa 4
   sobre `03_categorias.csv` sin volver a leer el Excel, que es la parte lenta.
-- **Extensible.** Las etapas de construccion de series y de particion en
-  entrenamiento y prueba se encadenan despues como `05_series.py` y `06_split.py`,
-  leyendo `base_limpia.csv`, sin tocar el codigo que ya funciona.
+- **Extensible.** Las etapas de construccion de series (`05_series.py`) y de
+  particion en entrenamiento y prueba (`06_split.py`) se encadenaron leyendo
+  `base_limpia.csv`, sin tocar el codigo que ya funcionaba.
 - **Datos crudos intactos.** El Excel en `data/raw/` nunca se modifica. Todo lo
   generado vive en `data/processed/` y se puede regenerar corriendo el pipeline.
